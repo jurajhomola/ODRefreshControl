@@ -29,11 +29,15 @@
 @property (nonatomic, strong) UIColor *tintColor;
 @property (nonatomic, assign) UIActivityIndicatorViewStyle activityIndicatorViewStyle;
 @property (nonatomic, strong) UIColor *activityIndicatorViewColor; // iOS5 or more
+@property (nonatomic, readonly) CGFloat maxDistance;
+
 
 - (id)initInScrollView:(UIScrollView *)scrollView;
 
 // use custom activity indicator
 - (id)initInScrollView:(UIScrollView *)scrollView activityIndicatorView:(UIView *)activity;
+
+- (id)initInScrollView:(UIScrollView *)scrollView activityIndicatorView:(UIView *)activity maxDistance:(CGFloat)maxDistance;
 
 // Tells the control that a refresh operation was started programmatically
 - (void)beginRefreshing;

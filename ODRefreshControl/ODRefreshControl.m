@@ -24,7 +24,7 @@
 #define kMaxArrowSize       3
 #define kMinArrowRadius     5
 #define kMaxArrowRadius     7
-#define kMaxDistance        40
+#define kMaxDistance        40 //not used anymore
 
 @interface ODRefreshControl ()
 
@@ -51,13 +51,18 @@ static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
     return [self initInScrollView:scrollView activityIndicatorView:nil];
 }
 
-- (id)initInScrollView:(UIScrollView *)scrollView activityIndicatorView:(UIView *)activity
-{
+- (id)initInScrollView:(UIScrollView *)scrollView activityIndicatorView:(UIView *)activity{
+    return [self initInScrollView:scrollView activityIndicatorView:activity maxDistance:40];
+}
+
+- (id)initInScrollView:(UIScrollView *)scrollView activityIndicatorView:(UIView *)activity maxDistance:(CGFloat)maxDistance{
     self = [super initWithFrame:CGRectMake(0, -(kTotalViewHeight + scrollView.contentInset.top), scrollView.frame.size.width, kTotalViewHeight)];
     
     if (self) {
         self.scrollView = scrollView;
         self.originalContentInset = scrollView.contentInset;
+        
+        self->_maxDistance = maxDistance;
         
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [scrollView addSubview:self];
@@ -103,6 +108,7 @@ static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
     }
     return self;
 }
+
 
 - (void)dealloc
 {
@@ -185,7 +191,7 @@ static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
             
             [CATransaction begin];
             [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
-            _shapeLayer.position = CGPointMake(0, kMaxDistance + offset + kOpenedViewHeight);
+            _shapeLayer.position = CGPointMake(0, self.maxDistance + offset + kOpenedViewHeight);
             [CATransaction commit];
 
             _activity.center = CGPointMake(floor(self.frame.size.width / 2), MIN(offset + self.frame.size.height + floor(kOpenedViewHeight / 2), self.frame.size.height - kOpenedViewHeight/ 2));
@@ -265,8 +271,8 @@ static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
     
     //Calculate some useful points and values
     CGFloat verticalShift = MAX(0, -((kMaxTopRadius + kMaxBottomRadius + kMaxTopPadding + kMaxBottomPadding) + offset));
-    CGFloat distance = MIN(kMaxDistance, fabs(verticalShift));
-    CGFloat percentage = 1 - (distance / kMaxDistance);
+    CGFloat distance = MIN(self.maxDistance, fabs(verticalShift));
+    CGFloat percentage = 1 - (distance / self.maxDistance);
     
     CGFloat currentTopPadding = lerp(kMinTopPadding, kMaxTopPadding, percentage);
     CGFloat currentTopRadius = lerp(kMinTopRadius, kMaxTopRadius, percentage);
@@ -280,7 +286,7 @@ static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
     } else {
         topOrigin = CGPointMake(floor(self.bounds.size.width / 2), self.bounds.size.height + offset + currentTopPadding + currentTopRadius);
         if (percentage == 0) {
-            bottomOrigin.y -= (fabs(verticalShift) - kMaxDistance);
+            bottomOrigin.y -= (fabs(verticalShift) - self.maxDistance);
             triggered = YES;
         }
     }
@@ -449,6 +455,11 @@ static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
             // or it'll get released in the animation block.
             _ignoreInset = YES;
             [blockScrollView setContentInset:self.originalContentInset];
+            [self performAfter:0.1 block:^{
+                [blockScrollView setContentOffset:CGPointMake(0, -1)];
+                [blockScrollView setContentOffset:CGPointMake(0, 0)];
+            }];
+            
             _ignoreInset = NO;
         }];
     }
